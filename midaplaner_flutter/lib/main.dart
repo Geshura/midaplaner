@@ -65,39 +65,47 @@ class PlanerAplikacja extends StatelessWidget {
     return MaterialApp(
       title: 'MiDaPlaner',
       theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF1A237E), // granatowy
-        primaryColor: const Color(0xFF283593), // lekko granatowy
+        scaffoldBackgroundColor: const Color(0xFF181C2F), // ciemny granat
+        primaryColor: const Color(0xFF3949AB), // fiolet granatowy
         colorScheme: ThemeData.dark().colorScheme.copyWith(
-          primary: const Color(0xFF283593),
-          secondary: const Color(0xFF3949AB),
-          surface: const Color(0xFF1A237E),
-          // surface: const Color(0xFF232B4D),
+          primary: const Color(0xFF3949AB),
+          secondary: const Color(0xFF64B5F6), // jasny błękit
+          surface: const Color(0xFF232A45),
         ),
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF232B4D),
+          backgroundColor: Color(0xFF232A45),
           foregroundColor: Colors.white,
-          elevation: 0,
+          elevation: 4,
+          shadowColor: Color(0xFF101325),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF283593),
+            backgroundColor: Color(0xFF3949AB),
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
+            elevation: 4,
+            shadowColor: Color(0xFF101325),
           ),
         ),
         inputDecorationTheme: const InputDecorationTheme(
           filled: true,
-          fillColor: Color(0xFF232B4D),
-          border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-          labelStyle: TextStyle(color: Colors.white),
+          fillColor: Color(0xFF232A45),
+          border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
+          labelStyle: TextStyle(color: Color(0xFF64B5F6)),
           hintStyle: TextStyle(color: Colors.white70),
+        ),
+        cardTheme: const CardThemeData(
+          color: Color(0xFF232A45),
+          elevation: 6,
+          shadowColor: Color(0xFF101325),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(18))),
         ),
         textTheme: ThemeData.dark().textTheme.apply(
           bodyColor: Colors.white,
           displayColor: Colors.white,
         ),
       ),
-      home: FormularzZadaniaEkran(),
+      home: const ListaZadanEkran(),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -192,12 +200,12 @@ class _FormularzZadaniaEkranState extends State<FormularzZadaniaEkran> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF1A237E),
       appBar: AppBar(
-        title: Text(widget.zadanieDoEdycji != null ? 'Edycja' : 'Nowe Zadanie', style: const TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
+        title: Text(widget.zadanieDoEdycji != null ? 'Edycja' : 'Nowe Zadanie', style: const TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xFF232B4D),
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -331,7 +339,7 @@ class _FormularzZadaniaEkranState extends State<FormularzZadaniaEkran> {
                   icon: const Icon(Icons.close, color: Colors.red),
                   onPressed: () => setState(() => _podzadania.removeAt(e.key)),
                 ),
-              )),
+             )),
 
               Row(
                 children: [
@@ -384,4 +392,48 @@ class _FormularzZadaniaEkranState extends State<FormularzZadaniaEkran> {
       ),
     );
   }
-              }
+}
+
+// --- EKRAN LISTY ZADAŃ ---
+class ListaZadanEkran extends StatelessWidget {
+  const ListaZadanEkran({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final zadania = context.watch<PlanerProvider>().zadania;
+    return Scaffold(
+      backgroundColor: const Color(0xFF181C2F),
+      appBar: AppBar(
+        title: const Text('MiDaPlaner', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF64B5F6))),
+        backgroundColor: const Color(0xFF232A45),
+        elevation: 4,
+        iconTheme: const IconThemeData(color: Color(0xFF64B5F6)),
+      ),
+      body: zadania.isEmpty
+          ? const Center(
+              child: Text('Brak zadań', style: TextStyle(color: Colors.white70, fontSize: 18)),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: zadania.length,
+              itemBuilder: (context, idx) {
+                final z = zadania[idx];
+                return Card(
+                  child: ListTile(
+                    title: Text(z.tytul, style: const TextStyle(color: Color(0xFF64B5F6), fontWeight: FontWeight.bold, fontSize: 18)),
+                    subtitle: Text(DateFormat('dd.MM.yyyy HH:mm').format(z.termin), style: const TextStyle(color: Colors.white70)),
+                    trailing: Icon(z.wykonane ? Icons.check_circle : Icons.radio_button_unchecked, color: z.wykonane ? Color(0xFF64B5F6) : Colors.white70),
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => FormularzZadaniaEkran(zadanieDoEdycji: z))),
+                  ),
+                );
+              },
+            ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: const Color(0xFF64B5F6),
+        icon: const Icon(Icons.add, color: Color(0xFF232A45)),
+        label: const Text('Dodaj zadanie', style: TextStyle(color: Color(0xFF232A45), fontWeight: FontWeight.bold)),
+        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FormularzZadaniaEkran())),
+      ),
+    );
+  }
+}
