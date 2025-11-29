@@ -12,3 +12,4 @@ midaplaner_flutter/macos/Flutter/GeneratedPluginRegistrant.swift
 midaplaner_flutter/windows/flutter/generated_plugin_registrant.cc
 midaplaner_flutter/windows/flutter/generated_plugin_registrant.h
 midaplaner_flutter/windows/flutter/generated_plugins.cmake
+*.cmake
