@@ -22,65 +22,65 @@ void main() async {
 
 // --- 1. MODEL DANYCH ---
 
-class SubTask {
-  String title;
-  bool isDone;
+class Podzadanie {
+  String tytul;
+  bool wykonane;
 
-  SubTask({required this.title, this.isDone = false});
+  Podzadanie({required this.tytul, this.wykonane = false});
 
-  Map<String, dynamic> toMap() => {'title': title, 'isDone': isDone};
+  Map<String, dynamic> naMape() => {'tytul': tytul, 'wykonane': wykonane};
 
-  factory SubTask.fromMap(Map<String, dynamic> map) {
-    return SubTask(title: map['title'], isDone: map['isDone'] ?? false);
+  factory Podzadanie.zMapy(Map<String, dynamic> mapa) {
+    return Podzadanie(tytul: mapa['tytul'], wykonane: mapa['wykonane'] ?? false);
   }
 }
 
-class Task {
+class Zadanie {
   String id;
-  String title;
-  String description;
-  DateTime date;
-  String category;
-  bool isDone;
-  List<SubTask> subtasks;
+  String tytul;
+  String opis;
+  DateTime termin;
+  String kategoria;
+  bool wykonane;
+  List<Podzadanie> podzadania;
 
-  Task({
+  Zadanie({
     required this.id,
-    required this.title,
-    required this.description,
-    required this.date,
-    required this.category,
-    this.isDone = false,
-    List<SubTask>? subtasks,
-  }) : subtasks = subtasks ?? [];
+    required this.tytul,
+    required this.opis,
+    required this.termin,
+    required this.kategoria,
+    this.wykonane = false,
+    List<Podzadanie>? podzadania,
+  }) : podzadania = podzadania ?? [];
 
-  bool get isOverdue {
-    if (isDone) return false;
-    return date.isBefore(DateTime.now());
+  bool get poTerminie {
+    if (wykonane) return false;
+    return termin.isBefore(DateTime.now());
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> naMape() {
     return {
       'id': id,
-      'title': title,
-      'description': description,
-      'date': date.toIso8601String(),
-      'category': category,
-      'isDone': isDone,
-      'subtasks': subtasks.map((s) => s.toMap()).toList(),
+      'tytul': tytul,
+      'opis': opis,
+      'termin': termin.toIso8601String(),
+      'kategoria': kategoria,
+      'wykonane': wykonane,
+      'podzadania': podzadania.map((s) => s.naMape()).toList(),
     };
   }
 
-  factory Task.fromMap(Map<String, dynamic> map) {
-    return Task(
-      id: map['id'],
-      title: map['title'],
-      description: map['description'],
-      date: DateTime.parse(map['date']),
-      category: map['category'],
-      isDone: map['isDone'] ?? false,
-      subtasks: map['subtasks'] != null
-          ? (map['subtasks'] as List).map((s) => SubTask.fromMap(s)).toList()
+  factory Zadanie.zMapy(Map<String, dynamic> mapa) {
+    return Zadanie(
+      id: mapa['id'],
+      tytul: mapa['tytul'],
+      opis: mapa['opis'],
+      termin: DateTime.parse(mapa['termin']),
+      kategoria: mapa['kategoria'],
+      wykonane: mapa['wykonane'] ?? false,
+      podzadania: mapa['podzadania'] != null
+          ? (mapa['podzadania'] as List).map((s) => Podzadanie.zMapy(s)).toList()
           : [],
     );
   }
@@ -88,157 +88,124 @@ class Task {
 
 // --- 2. ZARZĄDZANIE STANEM (LOGIKA ODHACZANIA I CSV) ---
 
-class TaskProvider extends ChangeNotifier {
-  List<Task> _tasks = [];
-  List<Task> get tasks => _tasks;
+class PlanerProvider extends ChangeNotifier {
+  List<Zadanie> _zadania = [];
+  List<Zadanie> get zadania => _zadania;
 
-  TaskProvider() {
-    _loadTasks();
+  PlanerProvider() {
+    wczytajZadania();
   }
 
-  void saveTask(Task task, {bool isEditing = false}) {
-    if (isEditing) {
-      final index = _tasks.indexWhere((t) => t.id == task.id);
-      if (index != -1) _tasks[index] = task;
+  void zapiszZadanie(Zadanie zadanie, {bool edycja = false}) {
+    if (edycja) {
+      final index = _zadania.indexWhere((z) => z.id == zadanie.id);
+      if (index != -1) _zadania[index] = zadanie;
     } else {
-      _tasks.add(task);
+      _zadania.add(zadanie);
     }
-    _saveToPrefs();
+    zapiszDoPrefs();
     notifyListeners();
   }
 
-  void deleteTask(String id) {
-    _tasks.removeWhere((task) => task.id == id);
-    _saveToPrefs();
+  void usunZadanie(String id) {
+    _zadania.removeWhere((z) => z.id == id);
+    zapiszDoPrefs();
     notifyListeners();
   }
 
-  // LOGIKA 1: Kliknięcie głównego zadania -> Zmienia wszystkie podzadania
-  void toggleTaskStatus(String id) {
-    final index = _tasks.indexWhere((task) => task.id == id);
+  void przelaczStatusZadania(String id) {
+    final index = _zadania.indexWhere((z) => z.id == id);
     if (index != -1) {
-      final task = _tasks[index];
-      // Zmieniamy status rodzica
-      task.isDone = !task.isDone;
-      
-      // Kaskada: ustawiamy ten sam status wszystkim dzieciom
-      for (var sub in task.subtasks) {
-        sub.isDone = task.isDone;
+      final zadanie = _zadania[index];
+      zadanie.wykonane = !zadanie.wykonane;
+      for (var pod in zadanie.podzadania) {
+        pod.wykonane = zadanie.wykonane;
       }
-      
-      _saveToPrefs();
-      notifyListeners();
-    }
-  }
-  
-  // LOGIKA 2: Kliknięcie podzadania -> Sprawdza czy zaliczyć główne
-  void toggleSubtaskStatus(String taskId, int subtaskIndex) {
-    final index = _tasks.indexWhere((task) => task.id == taskId);
-    if (index != -1) {
-      final task = _tasks[index];
-      
-      // Zmieniamy status konkretnego podzadania
-      task.subtasks[subtaskIndex].isDone = !task.subtasks[subtaskIndex].isDone;
-
-      // Sprawdzamy "w drugą stronę":
-      // Jeśli WSZYSTKIE podzadania są zrobione -> Główne też jest zrobione.
-      // Jeśli chociaż jedno jest niezrobione -> Główne jest niezrobione.
-      if (task.subtasks.isNotEmpty) {
-        bool allDone = task.subtasks.every((s) => s.isDone);
-        task.isDone = allDone;
-      }
-
-      _saveToPrefs();
+      zapiszDoPrefs();
       notifyListeners();
     }
   }
 
-  // --- CSV EXPORT & IMPORT (CZYTELNE PLIKI) ---
-
-  // Pomocnicza funkcja do czyszczenia tekstu (żeby średniki nie psuły CSV)
-  String _clean(String input) {
-    return input.replaceAll(';', ',').replaceAll('\n', ' ');
+  void przelaczStatusPodzadania(String zadanieId, int podzadanieIndex) {
+    final index = _zadania.indexWhere((z) => z.id == zadanieId);
+    if (index != -1) {
+      final zadanie = _zadania[index];
+      zadanie.podzadania[podzadanieIndex].wykonane = !zadanie.podzadania[podzadanieIndex].wykonane;
+      if (zadanie.podzadania.isNotEmpty) {
+        bool wszystkieWykonane = zadanie.podzadania.every((p) => p.wykonane);
+        zadanie.wykonane = wszystkieWykonane;
+      }
+      zapiszDoPrefs();
+      notifyListeners();
+    }
   }
 
-  Future<void> exportTasksToCSV() async {
+  String _oczysc(String tekst) {
+    return tekst.replaceAll(';', ',').replaceAll('\n', ' ');
+  }
+
+  Future<void> eksportujCSV() async {
     try {
-      // Budowanie nagłówka
       StringBuffer csvBuffer = StringBuffer();
-      csvBuffer.writeln('ID;Tytul;Opis;Data;Kategoria;Status;Podzadania');
-
-      for (var t in _tasks) {
-        // Formatowanie podzadań do jednego pola: "tytul|1#tytul2|0"
-        String subtasksStr = t.subtasks.map((s) => '${_clean(s.title)}|${s.isDone ? "1" : "0"}').join('#');
-        
+      csvBuffer.writeln('ID;Tytul;Opis;Termin;Kategoria;Status;Podzadania');
+      for (var z in _zadania) {
+        String podzadaniaStr = z.podzadania.map((p) => '${_oczysc(p.tytul)}|${p.wykonane ? "1" : "0"}').join('#');
         csvBuffer.writeln(
-          '${t.id};'
-          '${_clean(t.title)};'
-          '${_clean(t.description)};'
-          '${t.date.toIso8601String()};'
-          '${t.category};'
-          '${t.isDone ? "1" : "0"};'
-          '$subtasksStr'
+          '${z.id};'
+          '${_oczysc(z.tytul)};'
+          '${_oczysc(z.opis)};'
+          '${z.termin.toIso8601String()};'
+          '${z.kategoria};'
+          '${z.wykonane ? "1" : "0"};'
+          '$podzadaniaStr'
         );
       }
-
       final directory = await getTemporaryDirectory();
-      // Zapis jako .csv (Excel)
       final file = File('${directory.path}/Planer_Export_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.csv');
       await file.writeAsString(csvBuffer.toString());
-      
       await Share.shareXFiles([XFile(file.path)], text: 'Mój plan zadań (CSV)');
     } catch (e) {
       debugPrint("Błąd eksportu CSV: $e");
     }
   }
 
-  Future<bool> importTasksFromCSV() async {
+  Future<bool> importujCSV() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom, allowedExtensions: ['csv', 'txt'],
       );
-
       if (result != null && result.files.single.path != null) {
         File file = File(result.files.single.path!);
         List<String> lines = await file.readAsLines();
-
         if (lines.isEmpty) return false;
-
-        List<Task> importedTasks = [];
-
-        // Pomijamy pierwszą linię (nagłówek)
+        List<Zadanie> zaimportowane = [];
         for (int i = 1; i < lines.length; i++) {
           String line = lines[i];
           if (line.trim().isEmpty) continue;
-
           List<String> parts = line.split(';');
-          if (parts.length < 6) continue; // Zabezpieczenie przed błędną linią
-
-          // Parsowanie podzadań
-          List<SubTask> subs = [];
+          if (parts.length < 6) continue;
+          List<Podzadanie> pods = [];
           if (parts.length > 6 && parts[6].isNotEmpty) {
-            var subsRaw = parts[6].split('#');
-            for (var s in subsRaw) {
-              var sParts = s.split('|');
-              if (sParts.length == 2) {
-                subs.add(SubTask(title: sParts[0], isDone: sParts[1] == '1'));
+            var podsRaw = parts[6].split('#');
+            for (var p in podsRaw) {
+              var pParts = p.split('|');
+              if (pParts.length == 2) {
+                pods.add(Podzadanie(tytul: pParts[0], wykonane: pParts[1] == '1'));
               }
             }
           }
-
-          importedTasks.add(Task(
+          zaimportowane.add(Zadanie(
             id: parts[0].isNotEmpty ? parts[0] : DateTime.now().millisecondsSinceEpoch.toString(),
-            title: parts[1],
-            description: parts[2],
-            date: DateTime.tryParse(parts[3]) ?? DateTime.now(),
-            category: parts[4],
-            isDone: parts[5] == '1',
-            subtasks: subs,
+            tytul: parts[1],
+            opis: parts[2],
+            termin: DateTime.tryParse(parts[3]) ?? DateTime.now(),
+            kategoria: parts[4],
+            wykonane: parts[5] == '1',
+            podzadania: pods,
           ));
         }
-
-        _tasks = importedTasks;
-        await _saveToPrefs();
+        _zadania = zaimportowane;
+        await zapiszDoPrefs();
         notifyListeners();
         return true;
       }
@@ -249,19 +216,18 @@ class TaskProvider extends ChangeNotifier {
     }
   }
 
-  // --- PREFS (Lokalna Baza) ---
-  Future<void> _saveToPrefs() async {
+  Future<void> zapiszDoPrefs() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('tasks_data', json.encode(_tasks.map((t) => t.toMap()).toList()));
+    await prefs.setString('zadania_data', json.encode(_zadania.map((z) => z.naMape()).toList()));
   }
 
-  Future<void> _loadTasks() async {
+  Future<void> wczytajZadania() async {
     final prefs = await SharedPreferences.getInstance();
-    final String? tasksString = prefs.getString('tasks_data');
-    if (tasksString != null) {
+    final String? zadaniaString = prefs.getString('zadania_data');
+    if (zadaniaString != null) {
       try {
-        final List<dynamic> decodedData = json.decode(tasksString);
-        _tasks = decodedData.map((item) => Task.fromMap(item)).toList();
+        final List<dynamic> decodedData = json.decode(zadaniaString);
+        _zadania = decodedData.map((item) => Zadanie.zMapy(item)).toList();
         notifyListeners();
       } catch (_) {}
     }
