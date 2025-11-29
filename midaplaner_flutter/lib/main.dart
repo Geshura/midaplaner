@@ -65,23 +65,23 @@ class PlanerAplikacja extends StatelessWidget {
     return MaterialApp(
       title: 'MiDaPlaner',
       theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF181C2F), // ciemny granat
-        primaryColor: const Color(0xFF3949AB), // fiolet granatowy
+        scaffoldBackgroundColor: const Color(0xFF20243A), // główny granat
+        primaryColor: const Color(0xFF283593), // fiolet granatowy
         colorScheme: ThemeData.dark().colorScheme.copyWith(
-          primary: const Color(0xFF3949AB),
+          primary: const Color(0xFF283593),
           secondary: const Color(0xFF64B5F6), // jasny błękit
-          surface: const Color(0xFF232A45),
+          surface: const Color(0xFF23284D),
         ),
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF232A45),
-          foregroundColor: Colors.white,
+          backgroundColor: Color(0xFF23284D),
+          foregroundColor: Color(0xFF64B5F6),
           elevation: 4,
           shadowColor: Color(0xFF101325),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFF3949AB),
-            foregroundColor: Colors.white,
+            backgroundColor: Color(0xFF283593),
+            foregroundColor: Color(0xFF64B5F6),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
             elevation: 4,
             shadowColor: Color(0xFF101325),
@@ -89,20 +89,20 @@ class PlanerAplikacja extends StatelessWidget {
         ),
         inputDecorationTheme: const InputDecorationTheme(
           filled: true,
-          fillColor: Color(0xFF232A45),
+          fillColor: Color(0xFF23284D),
           border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
           labelStyle: TextStyle(color: Color(0xFF64B5F6)),
           hintStyle: TextStyle(color: Colors.white70),
         ),
         cardTheme: const CardThemeData(
-          color: Color(0xFF232A45),
+          color: Color(0xFF23284D),
           elevation: 6,
           shadowColor: Color(0xFF101325),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(18))),
         ),
         textTheme: ThemeData.dark().textTheme.apply(
-          bodyColor: Colors.white,
-          displayColor: Colors.white,
+          bodyColor: Color(0xFF64B5F6),
+          displayColor: Color(0xFF64B5F6),
         ),
       ),
       home: const ListaZadanEkran(),
@@ -402,10 +402,10 @@ class ListaZadanEkran extends StatelessWidget {
   Widget build(BuildContext context) {
     final zadania = context.watch<PlanerProvider>().zadania;
     return Scaffold(
-      backgroundColor: const Color(0xFF181C2F),
+      backgroundColor: const Color(0xFF20243A),
       appBar: AppBar(
-        title: const Text('MiDaPlaner', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF64B5F6))),
-        backgroundColor: const Color(0xFF232A45),
+        title: const Text('MiDaPlaner', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFF23284D),
         elevation: 4,
         iconTheme: const IconThemeData(color: Color(0xFF64B5F6)),
       ),
@@ -430,8 +430,8 @@ class ListaZadanEkran extends StatelessWidget {
             ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: const Color(0xFF64B5F6),
-        icon: const Icon(Icons.add, color: Color(0xFF232A45)),
-        label: const Text('Dodaj zadanie', style: TextStyle(color: Color(0xFF232A45), fontWeight: FontWeight.bold)),
+        icon: const Icon(Icons.add, color: Color(0xFF23284D)),
+        label: const Text('Dodaj zadanie', style: TextStyle(color: Color(0xFF23284D), fontWeight: FontWeight.bold)),
         onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FormularzZadaniaEkran())),
       ),
     );
