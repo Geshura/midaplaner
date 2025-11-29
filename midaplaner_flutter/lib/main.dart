@@ -129,6 +129,7 @@ class _FormularzZadaniaEkranState extends State<FormularzZadaniaEkran> {
   late String _wybranaKategoria;
   late bool _wykonane;
   List<Podzadanie> _podzadania = [];
+  final Map<int, TextEditingController> _podzadanieKontrolery = {};
   final TextEditingController _podzadanieController = TextEditingController();
 
   final List<String> _kategorie = ['Dom', 'Praca', 'Zakupy', 'Nauka', 'Inne'];
@@ -145,6 +146,9 @@ class _FormularzZadaniaEkranState extends State<FormularzZadaniaEkran> {
     _wykonane = z?.wykonane ?? false;
     if (z != null) {
       _podzadania = z.podzadania.map((p) => Podzadanie(tytul: p.tytul, wykonane: p.wykonane)).toList();
+      for (var i = 0; i < _podzadania.length; i++) {
+        _podzadanieKontrolery[i] = TextEditingController(text: _podzadania[i].tytul);
+      }
     }
   }
 
@@ -200,154 +204,186 @@ class _FormularzZadaniaEkranState extends State<FormularzZadaniaEkran> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A237E),
+      backgroundColor: const Color(0xFF11131A),
       appBar: AppBar(
-        title: Text(widget.zadanieDoEdycji != null ? 'Edycja' : 'Nowe Zadanie', style: const TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFF232B4D),
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(widget.zadanieDoEdycji != null ? 'Edycja' : 'Nowe Zadanie', style: const TextStyle(color: Color(0xFF64B5F6))),
+        backgroundColor: const Color(0xFF181A22),
+        elevation: 4,
+        iconTheme: const IconThemeData(color: Color(0xFF64B5F6)),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextFormField(
-                controller: _tytulController,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                decoration: const InputDecoration(
-                  labelText: 'Tytuł',
-                  prefixIcon: Icon(Icons.title),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                ),
-                validator: (val) => val!.isEmpty ? 'Wpisz tytuł' : null,
-              ),
-              const SizedBox(height: 16),
-
-              TextFormField(
-                controller: _opisController,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Opis (opcjonalnie)',
-                  prefixIcon: Icon(Icons.notes),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              InkWell(
-                onTap: wybierzTerminGodzine,
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color.fromRGBO(33, 150, 243, 0.05),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color.fromRGBO(33, 150, 243, 0.2)),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF11131A), Color(0xFF181A22), Color(0xFF23284D)],
+          ),
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextFormField(
+                  controller: _tytulController,
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF64B5F6)),
+                  decoration: const InputDecoration(
+                    labelText: 'Tytuł',
+                    prefixIcon: Icon(Icons.title, color: Color(0xFF64B5F6)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
                   ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.calendar_month, color: Colors.blue),
-                      const SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("Termin (Data i Godzina)", style: TextStyle(fontSize: 12, color: Colors.grey)),
-                          Text(
-                            "${DateFormat('dd.MM.yyyy').format(_wybranyTermin)}  |  ${_wybranaGodzina.format(context)}",
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
-                        ],
+                  validator: (val) => val!.isEmpty ? 'Wpisz tytuł' : null,
+                ),
+                const SizedBox(height: 16),
+
+                TextFormField(
+                  controller: _opisController,
+                  maxLines: 3,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelText: 'Opis (opcjonalnie)',
+                    prefixIcon: Icon(Icons.notes, color: Color(0xFF64B5F6)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                InkWell(
+                  onTap: wybierzTerminGodzine,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF181A22), Color(0xFF23284D)],
                       ),
-                      const Spacer(),
-                      const Icon(Icons.edit, size: 16, color: Colors.grey),
-                    ],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFF23284D)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.calendar_month, color: Color(0xFF64B5F6)),
+                        const SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("Termin (Data i Godzina)", style: TextStyle(fontSize: 12, color: Colors.white70)),
+                            Text(
+                              "${DateFormat('dd.MM.yyyy').format(_wybranyTermin)}  |  ${_wybranaGodzina.format(context)}",
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF64B5F6)),
+                            ),
+                          ],
+                        ),
+                        const Spacer(),
+                        const Icon(Icons.edit, size: 16, color: Colors.white70),
+                      ],
+                    ),
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              DropdownButtonFormField<String>(
-                initialValue: _wybranaKategoria,
-                decoration: const InputDecoration(
-                  labelText: 'Kategoria',
-                  prefixIcon: Icon(Icons.category),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                ),
-                items: _kategorie.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                onChanged: (val) => setState(() => _wybranaKategoria = val!),
-              ),
-
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Checkbox(
-                    value: _wykonane,
-                    onChanged: (v) {
-                      setState(() {
-                        _wykonane = v!;
-                        for (var p in _podzadania) {
-                          p.wykonane = _wykonane;
-                        }
-                      });
-                    },
+                DropdownButtonFormField<String>(
+                  value: _wybranaKategoria,
+                  decoration: const InputDecoration(
+                    labelText: 'Kategoria',
+                    prefixIcon: Icon(Icons.category, color: Color(0xFF64B5F6)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
                   ),
-                  const Text('Zadanie wykonane', style: TextStyle(fontWeight: FontWeight.bold)),
-                  const Spacer(),
-                  if (_podzadania.isNotEmpty)
-                    TextButton.icon(
-                      icon: const Icon(Icons.done_all),
-                      label: const Text('Wszystkie podzadania'),
-                      onPressed: () {
+                  items: _kategorie.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                  onChanged: (val) => setState(() => _wybranaKategoria = val!),
+                ),
+
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: _wykonane,
+                      activeColor: const Color(0xFF64B5F6),
+                      onChanged: (v) {
                         setState(() {
-                          bool wszystkieWykonane = _podzadania.every((p) => p.wykonane);
+                          _wykonane = v!;
                           for (var p in _podzadania) {
-                            p.wykonane = !wszystkieWykonane;
+                            p.wykonane = _wykonane;
                           }
-                          _wykonane = !wszystkieWykonane;
                         });
                       },
                     ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-              const Text("LISTA KONTROLNA", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
-              const SizedBox(height: 10),
-
-              ..._podzadania.asMap().entries.map((e) => ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Checkbox(
-                  value: e.value.wykonane,
-                  onChanged: (v) => setState(() {
-                    e.value.wykonane = v!;
-                    if (_podzadania.isNotEmpty) {
-                      bool wszystkieWykonane = _podzadania.every((p) => p.wykonane);
-                      _wykonane = wszystkieWykonane;
-                    }
-                  }),
+                    const Text('Zadanie wykonane', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                    const Spacer(),
+                    if (_podzadania.isNotEmpty)
+                      TextButton.icon(
+                        icon: const Icon(Icons.done_all, color: Color(0xFF64B5F6)),
+                        label: const Text('Wszystkie podzadania', style: TextStyle(color: Colors.white)),
+                        onPressed: () {
+                          setState(() {
+                            bool wszystkieWykonane = _podzadania.every((p) => p.wykonane);
+                            for (var p in _podzadania) {
+                              p.wykonane = !wszystkieWykonane;
+                            }
+                            _wykonane = !wszystkieWykonane;
+                          });
+                        },
+                      ),
+                  ],
                 ),
-                title: TextFormField(
-                  initialValue: e.value.tytul,
-                  decoration: const InputDecoration(border: InputBorder.none),
-                  onChanged: (val) => setState(() => e.value.tytul = val),
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.red),
-                  onPressed: () => setState(() => _podzadania.removeAt(e.key)),
-                ),
-             )),
 
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _podzadanieController,
-                      decoration: const InputDecoration(hintText: "Dodaj podzadanie..."),
-                      onSubmitted: (_) {
+                const SizedBox(height: 20),
+                const Text("LISTA KONTROLNA", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white70)),
+                const SizedBox(height: 10),
+
+                ..._podzadania.asMap().entries.map((e) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Checkbox(
+                    value: e.value.wykonane,
+                    activeColor: const Color(0xFF64B5F6),
+                    onChanged: (v) => setState(() {
+                      e.value.wykonane = v!;
+                      if (_podzadania.isNotEmpty) {
+                        bool wszystkieWykonane = _podzadania.every((p) => p.wykonane);
+                        _wykonane = wszystkieWykonane;
+                      }
+                    }),
+                  ),
+                  title: TextFormField(
+                    controller: _podzadanieKontrolery[e.key] ??= TextEditingController(text: e.value.tytul),
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(border: InputBorder.none),
+                    onChanged: (val) => setState(() => e.value.tytul = val),
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.close, color: Colors.red),
+                    onPressed: () => setState(() {
+                      _podzadania.removeAt(e.key);
+                      _podzadanieKontrolery.remove(e.key);
+                    }),
+                  ),
+                )),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _podzadanieController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(hintText: "Dodaj podzadanie...", hintStyle: TextStyle(color: Colors.white70)),
+                        onSubmitted: (_) {
+                          if (_podzadanieController.text.isNotEmpty && !_podzadania.any((p) => p.tytul == _podzadanieController.text)) {
+                            setState(() {
+                              _podzadania.add(Podzadanie(tytul: _podzadanieController.text));
+                              _podzadanieController.clear();
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add_circle, color: Color(0xFF64B5F6), size: 30),
+                      onPressed: () {
                         if (_podzadanieController.text.isNotEmpty && !_podzadania.any((p) => p.tytul == _podzadanieController.text)) {
                           setState(() {
                             _podzadania.add(Podzadanie(tytul: _podzadanieController.text));
@@ -355,38 +391,27 @@ class _FormularzZadaniaEkranState extends State<FormularzZadaniaEkran> {
                           });
                         }
                       },
+                    )
+                  ],
+                ),
+
+                const SizedBox(height: 40),
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton.icon(
+                    onPressed: zapisz,
+                    icon: const Icon(Icons.save, color: Colors.white),
+                    label: const Text('ZAPISZ ZADANIE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF64B5F6),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.add_circle, color: Color(0xFF6C63FF), size: 30),
-                    onPressed: () {
-                      if (_podzadanieController.text.isNotEmpty && !_podzadania.any((p) => p.tytul == _podzadanieController.text)) {
-                        setState(() {
-                          _podzadania.add(Podzadanie(tytul: _podzadanieController.text));
-                          _podzadanieController.clear();
-                        });
-                      }
-                    },
-                  )
-                ],
-              ),
-
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton.icon(
-                  onPressed: zapisz,
-                  icon: const Icon(Icons.save, color: Colors.white),
-                  label: const Text('ZAPISZ ZADANIE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6C63FF),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
                 ),
-              ),
-              const SizedBox(height: 30),
-            ],
+                const SizedBox(height: 30),
+              ],
+            ),
           ),
         ),
       ),
@@ -402,36 +427,61 @@ class ListaZadanEkran extends StatelessWidget {
   Widget build(BuildContext context) {
     final zadania = context.watch<PlanerProvider>().zadania;
     return Scaffold(
-      backgroundColor: const Color(0xFF20243A),
+      backgroundColor: const Color(0xFF11131A),
       appBar: AppBar(
         title: const Text('MiDaPlaner', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: const Color(0xFF23284D),
+        backgroundColor: const Color(0xFF181A22),
         elevation: 4,
         iconTheme: const IconThemeData(color: Color(0xFF64B5F6)),
       ),
-      body: zadania.isEmpty
-          ? const Center(
-              child: Text('Brak zadań', style: TextStyle(color: Colors.white70, fontSize: 18)),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: zadania.length,
-              itemBuilder: (context, idx) {
-                final z = zadania[idx];
-                return Card(
-                  child: ListTile(
-                    title: Text(z.tytul, style: const TextStyle(color: Color(0xFF64B5F6), fontWeight: FontWeight.bold, fontSize: 18)),
-                    subtitle: Text(DateFormat('dd.MM.yyyy HH:mm').format(z.termin), style: const TextStyle(color: Colors.white70)),
-                    trailing: Icon(z.wykonane ? Icons.check_circle : Icons.radio_button_unchecked, color: z.wykonane ? Color(0xFF64B5F6) : Colors.white70),
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => FormularzZadaniaEkran(zadanieDoEdycji: z))),
-                  ),
-                );
-              },
-            ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF11131A), Color(0xFF181A22), Color(0xFF23284D)],
+          ),
+        ),
+        child: zadania.isEmpty
+            ? const Center(
+                child: Text('Brak zadań', style: TextStyle(color: Colors.white70, fontSize: 18)),
+              )
+            : ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: zadania.length,
+                itemBuilder: (context, idx) {
+                  final z = zadania[idx];
+                  return Container(
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF181A22), Color(0xFF23284D)],
+                      ),
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ListTile(
+                      title: Text(z.tytul, style: const TextStyle(color: Color(0xFF64B5F6), fontWeight: FontWeight.bold, fontSize: 18)),
+                      subtitle: Text(DateFormat('dd.MM.yyyy HH:mm').format(z.termin), style: const TextStyle(color: Colors.white70)),
+                      trailing: Icon(z.wykonane ? Icons.check_circle : Icons.radio_button_unchecked, color: z.wykonane ? Color(0xFF64B5F6) : Colors.white70),
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => FormularzZadaniaEkran(zadanieDoEdycji: z))),
+                    ),
+                  );
+                },
+              ),
+      ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: const Color(0xFF64B5F6),
-        icon: const Icon(Icons.add, color: Color(0xFF23284D)),
-        label: const Text('Dodaj zadanie', style: TextStyle(color: Color(0xFF23284D), fontWeight: FontWeight.bold)),
+        icon: const Icon(Icons.add, color: Color(0xFF181A22)),
+        label: const Text('Dodaj zadanie', style: TextStyle(color: Color(0xFF181A22), fontWeight: FontWeight.bold)),
         onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FormularzZadaniaEkran())),
       ),
     );
