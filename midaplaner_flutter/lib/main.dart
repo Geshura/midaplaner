@@ -141,20 +141,24 @@ class _FormularzZadaniaEkranState extends State<FormularzZadaniaEkran> {
       locale: const Locale('pl'),
     );
     if (data != null) {
-      if (!mounted) return;
-      final TimeOfDay? godzina = await showTimePicker(
-        context: context,
-        initialTime: _wybranaGodzina,
-        builder: (context, child) {
-          return MediaQuery(data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true), child: child!);
-        }
-      );
-      if (godzina != null) {
-        setState(() {
-          _wybranyTermin = data;
-          _wybranaGodzina = godzina;
-        });
+      setState(() {
+        _wybranyTermin = data;
+      });
+    }
+  }
+
+  Future<void> wybierzGodzine() async {
+    final TimeOfDay? godzina = await showTimePicker(
+      context: context,
+      initialTime: _wybranaGodzina,
+      builder: (context, child) {
+        return MediaQuery(data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true), child: child!);
       }
+    );
+    if (godzina != null) {
+      setState(() {
+        _wybranaGodzina = godzina;
+      });
     }
   }
 
@@ -230,39 +234,82 @@ class _FormularzZadaniaEkranState extends State<FormularzZadaniaEkran> {
                 ),
                 const SizedBox(height: 20),
 
-                InkWell(
-                  onTap: wybierzTerminGodzine,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Color(0xFF181A22), Color(0xFF23284D)],
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF23284D)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.calendar_month, color: Color(0xFF64B5F6)),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text("Termin (Data i Godzina)", style: TextStyle(fontSize: 12, color: Colors.white70)),
-                            Text(
-                              "${DateFormat('dd.MM.yyyy').format(_wybranyTermin)}  |  ${_wybranaGodzina.format(context)}",
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF64B5F6)),
+                Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: wybierzTerminGodzine,
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Color(0xFF181A22), Color(0xFF23284D)],
                             ),
-                          ],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFF23284D)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.calendar_month, color: Color(0xFF64B5F6)),
+                              const SizedBox(width: 10),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text("Data", style: TextStyle(fontSize: 12, color: Colors.white70)),
+                                  Text(
+                                    DateFormat('dd.MM.yyyy').format(_wybranyTermin),
+                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF64B5F6)),
+                                  ),
+                                ],
+                              ),
+                              const Spacer(),
+                              const Icon(Icons.edit, size: 16, color: Colors.white70),
+                            ],
+                          ),
                         ),
-                        const Spacer(),
-                        const Icon(Icons.edit, size: 16, color: Colors.white70),
-                      ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: InkWell(
+                        onTap: wybierzGodzine,
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Color(0xFF181A22), Color(0xFF23284D)],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFF23284D)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.access_time, color: Color(0xFF64B5F6)),
+                              const SizedBox(width: 10),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text("Godzina", style: TextStyle(fontSize: 12, color: Colors.white70)),
+                                  Text(
+                                    _wybranaGodzina.format(context),
+                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF64B5F6)),
+                                  ),
+                                ],
+                              ),
+                              const Spacer(),
+                              const Icon(Icons.edit, size: 16, color: Colors.white70),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
 
                 const SizedBox(height: 20),
@@ -442,7 +489,7 @@ class ListaZadanEkran extends StatelessWidget {
                       borderRadius: BorderRadius.circular(18),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
+                          color: Colors.black.withAlpha((0.3 * 255).round()),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
