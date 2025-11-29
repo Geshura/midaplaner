@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+import 'login_screen.dart';
 // import 'package:path_provider/path_provider.dart';
 
 void main() async {
@@ -61,387 +62,36 @@ class PlanerProvider extends ChangeNotifier {
 // --- ROOT WIDGET ---
 class PlanerAplikacja extends StatelessWidget {
   const PlanerAplikacja({super.key});
-    @override
-    Widget build(BuildContext context) {
-      return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'MiDaPlaner',
-        theme: ThemeData.dark().copyWith(
-          scaffoldBackgroundColor: const Color(0xFF11131A),
-          colorScheme: const ColorScheme.dark(
-            primary: Color(0xFF64B5F6),
-            secondary: Color(0xFF23284D),
-          ),
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Color(0xFF181A22),
-            elevation: 4,
-          ),
-        ),
-        localizationsDelegates: [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: [
-          const Locale('pl'),
-          const Locale('en'),
-        ],
-        home: const ListaZadanEkran(),
-      );
-    }
-}
-// --- 1. MODEL DANYCH ---
-
-class FormularzZadaniaEkran extends StatefulWidget {
-  final Zadanie? zadanieDoEdycji;
-  const FormularzZadaniaEkran({super.key, this.zadanieDoEdycji});
-
-  @override
-  State<FormularzZadaniaEkran> createState() => _FormularzZadaniaEkranState();
-}
-
-class _FormularzZadaniaEkranState extends State<FormularzZadaniaEkran> {
-  final _formKey = GlobalKey<FormState>();
-  late TextEditingController _tytulController;
-  late TextEditingController _opisController;
-  late DateTime _wybranyTermin;
-  late TimeOfDay _wybranaGodzina;
-  late String _wybranaKategoria;
-  late bool _wykonane;
-  List<Podzadanie> _podzadania = [];
-  final Map<int, TextEditingController> _podzadanieKontrolery = {};
-  final TextEditingController _podzadanieController = TextEditingController();
-
-  final List<String> _kategorie = ['Dom', 'Praca', 'Zakupy', 'Nauka', 'Inne'];
-
-  @override
-  void initState() {
-    super.initState();
-    final z = widget.zadanieDoEdycji;
-    _tytulController = TextEditingController(text: z?.tytul ?? '');
-    _opisController = TextEditingController(text: z?.opis ?? '');
-    _wybranyTermin = z?.termin ?? DateTime.now();
-    _wybranaGodzina = z != null ? TimeOfDay.fromDateTime(z.termin) : TimeOfDay.now();
-    _wybranaKategoria = z?.kategoria ?? 'Dom';
-    _wykonane = z?.wykonane ?? false;
-    if (z != null) {
-      _podzadania = z.podzadania.map((p) => Podzadanie(tytul: p.tytul, wykonane: p.wykonane)).toList();
-      for (var i = 0; i < _podzadania.length; i++) {
-        _podzadanieKontrolery[i] = TextEditingController(text: _podzadania[i].tytul);
-      }
-    }
-  }
-
-  Future<void> wybierzTerminGodzine() async {
-    final DateTime? data = await showDatePicker(
-      context: context,
-      initialDate: _wybranyTermin,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-      locale: const Locale('pl'),
-    );
-    if (data != null) {
-      setState(() {
-        _wybranyTermin = data;
-      });
-    }
-  }
-
-  Future<void> wybierzGodzine() async {
-    final TimeOfDay? godzina = await showTimePicker(
-      context: context,
-      initialTime: _wybranaGodzina,
-      builder: (context, child) {
-        return MediaQuery(data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true), child: child!);
-      }
-    );
-    if (godzina != null) {
-      setState(() {
-        _wybranaGodzina = godzina;
-      });
-    }
-  }
-
-  void zapisz() {
-    if (_formKey.currentState!.validate()) {
-      final DateTime finalTermin = DateTime(
-        _wybranyTermin.year, _wybranyTermin.month, _wybranyTermin.day,
-        _wybranaGodzina.hour, _wybranaGodzina.minute,
-      );
-      final zadanie = Zadanie(
-        id: widget.zadanieDoEdycji?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-        tytul: _tytulController.text,
-        opis: _opisController.text,
-        termin: finalTermin,
-        kategoria: _wybranaKategoria,
-        wykonane: _wykonane,
-        podzadania: _podzadania,
-      );
-      Provider.of<PlanerProvider>(context, listen: false).zapiszZadanie(zadanie, edycja: widget.zadanieDoEdycji != null);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(widget.zadanieDoEdycji != null ? 'Zadanie zaktualizowane!' : 'Dodano zadanie!'), backgroundColor: Colors.green)
-      );
-      Navigator.pop(context);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF11131A),
-      appBar: AppBar(
-        title: Text(widget.zadanieDoEdycji != null ? 'Edycja' : 'Nowe Zadanie', style: const TextStyle(color: Color(0xFF64B5F6))),
-        backgroundColor: const Color(0xFF181A22),
-        elevation: 4,
-        iconTheme: const IconThemeData(color: Color(0xFF64B5F6)),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF11131A), Color(0xFF181A22), Color(0xFF23284D)],
-          ),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'MiDaPlaner',
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: const Color(0xFF11131A),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF64B5F6),
+          secondary: Color(0xFF23284D),
         ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextFormField(
-                  controller: _tytulController,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF64B5F6)),
-                  decoration: const InputDecoration(
-                    labelText: 'Tytuł',
-                    prefixIcon: Icon(Icons.title, color: Color(0xFF64B5F6)),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                  ),
-                  validator: (val) => val!.isEmpty ? 'Wpisz tytuł' : null,
-                ),
-                const SizedBox(height: 16),
-
-                TextFormField(
-                  controller: _opisController,
-                  maxLines: 3,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
-                    labelText: 'Opis (opcjonalnie)',
-                    prefixIcon: Icon(Icons.notes, color: Color(0xFF64B5F6)),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: InkWell(
-                        onTap: wybierzTerminGodzine,
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [Color(0xFF181A22), Color(0xFF23284D)],
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFF23284D)),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.calendar_month, color: Color(0xFF64B5F6)),
-                              const SizedBox(width: 10),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text("Data", style: TextStyle(fontSize: 12, color: Colors.white70)),
-                                  Text(
-                                    DateFormat('dd.MM.yyyy').format(_wybranyTermin),
-                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF64B5F6)),
-                                  ),
-                                ],
-                              ),
-                              const Spacer(),
-                              const Icon(Icons.edit, size: 16, color: Colors.white70),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: InkWell(
-                        onTap: wybierzGodzine,
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [Color(0xFF181A22), Color(0xFF23284D)],
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFF23284D)),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.access_time, color: Color(0xFF64B5F6)),
-                              const SizedBox(width: 10),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text("Godzina", style: TextStyle(fontSize: 12, color: Colors.white70)),
-                                  Text(
-                                    _wybranaGodzina.format(context),
-                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF64B5F6)),
-                                  ),
-                                ],
-                              ),
-                              const Spacer(),
-                              const Icon(Icons.edit, size: 16, color: Colors.white70),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 20),
-
-                DropdownButtonFormField<String>(
-                  value: _wybranaKategoria,
-                  decoration: const InputDecoration(
-                    labelText: 'Kategoria',
-                    prefixIcon: Icon(Icons.category, color: Color(0xFF64B5F6)),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                  ),
-                  items: _kategorie.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                  onChanged: (val) => setState(() => _wybranaKategoria = val!),
-                ),
-
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: _wykonane,
-                      activeColor: const Color(0xFF64B5F6),
-                      onChanged: (v) {
-                        setState(() {
-                          _wykonane = v!;
-                          for (var p in _podzadania) {
-                            p.wykonane = _wykonane;
-                          }
-                        });
-                      },
-                    ),
-                    const Text('Zadanie wykonane', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                    const Spacer(),
-                    if (_podzadania.isNotEmpty)
-                      TextButton.icon(
-                        icon: const Icon(Icons.done_all, color: Color(0xFF64B5F6)),
-                        label: const Text('Wszystkie podzadania', style: TextStyle(color: Colors.white)),
-                        onPressed: () {
-                          setState(() {
-                            bool wszystkieWykonane = _podzadania.every((p) => p.wykonane);
-                            for (var p in _podzadania) {
-                              p.wykonane = !wszystkieWykonane;
-                            }
-                            _wykonane = !wszystkieWykonane;
-                          });
-                        },
-                      ),
-                  ],
-                ),
-
-                const SizedBox(height: 20),
-                const Text("LISTA KONTROLNA", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white70)),
-                const SizedBox(height: 10),
-
-                ..._podzadania.asMap().entries.map((e) => ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Checkbox(
-                    value: e.value.wykonane,
-                    activeColor: const Color(0xFF64B5F6),
-                    onChanged: (v) => setState(() {
-                      e.value.wykonane = v!;
-                      if (_podzadania.isNotEmpty) {
-                        bool wszystkieWykonane = _podzadania.every((p) => p.wykonane);
-                        _wykonane = wszystkieWykonane;
-                      }
-                    }),
-                  ),
-                  title: TextFormField(
-                    controller: _podzadanieKontrolery[e.key] ??= TextEditingController(text: e.value.tytul),
-                    style: const TextStyle(color: Colors.white),
-                    decoration: const InputDecoration(border: InputBorder.none),
-                    onChanged: (val) => setState(() => e.value.tytul = val),
-                  ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.close, color: Colors.red),
-                    onPressed: () => setState(() {
-                      _podzadania.removeAt(e.key);
-                      _podzadanieKontrolery.remove(e.key);
-                    }),
-                  ),
-                )),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _podzadanieController,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: const InputDecoration(hintText: "Dodaj podzadanie...", hintStyle: TextStyle(color: Colors.white70)),
-                        onSubmitted: (_) {
-                          if (_podzadanieController.text.isNotEmpty && !_podzadania.any((p) => p.tytul == _podzadanieController.text)) {
-                            setState(() {
-                              _podzadania.add(Podzadanie(tytul: _podzadanieController.text));
-                              _podzadanieController.clear();
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.add_circle, color: Color(0xFF64B5F6), size: 30),
-                      onPressed: () {
-                        if (_podzadanieController.text.isNotEmpty && !_podzadania.any((p) => p.tytul == _podzadanieController.text)) {
-                          setState(() {
-                            _podzadania.add(Podzadanie(tytul: _podzadanieController.text));
-                            _podzadanieController.clear();
-                          });
-                        }
-                      },
-                    )
-                  ],
-                ),
-
-                const SizedBox(height: 40),
-                SizedBox(
-                  width: double.infinity,
-                  height: 55,
-                  child: ElevatedButton.icon(
-                    onPressed: zapisz,
-                    icon: const Icon(Icons.save, color: Colors.white),
-                    label: const Text('ZAPISZ ZADANIE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF64B5F6),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 30),
-              ],
-            ),
-          ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF181A22),
+          elevation: 4,
         ),
       ),
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        const Locale('pl'),
+        const Locale('en'),
+      ],
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const LoginScreen(),
+        '/zadania': (context) => const ListaZadanEkran(),
+      },
     );
   }
 }
@@ -478,28 +128,127 @@ class ListaZadanEkran extends StatelessWidget {
                 itemCount: zadania.length,
                 itemBuilder: (context, idx) {
                   final z = zadania[idx];
+                  int podzDone = z.podzadania.where((p) => p.wykonane).length;
+                  int podzAll = z.podzadania.length;
                   return Container(
-                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    margin: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [Color(0xFF181A22), Color(0xFF23284D)],
                       ),
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(22),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withAlpha((0.3 * 255).round()),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
+                          color: Colors.black.withAlpha((0.35 * 255).round()),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
                         ),
                       ],
+                      border: Border.all(color: Color(0xFF64B5F6).withAlpha(60), width: 1.5),
                     ),
-                    child: ListTile(
-                      title: Text(z.tytul, style: const TextStyle(color: Color(0xFF64B5F6), fontWeight: FontWeight.bold, fontSize: 18)),
-                      subtitle: Text(DateFormat('dd.MM.yyyy HH:mm').format(z.termin), style: const TextStyle(color: Colors.white70)),
-                      trailing: Icon(z.wykonane ? Icons.check_circle : Icons.radio_button_unchecked, color: z.wykonane ? Color(0xFF64B5F6) : Colors.white70),
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => FormularzZadaniaEkran(zadanieDoEdycji: z))),
+                    child: Theme(
+                      data: Theme.of(context).copyWith(
+                        dividerColor: Colors.transparent,
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        cardColor: Colors.transparent,
+                      ),
+                      child: ExpansionTile(
+                        tilePadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                        childrenPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                        backgroundColor: Colors.transparent,
+                        title: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(z.tytul, style: const TextStyle(color: Color(0xFF64B5F6), fontWeight: FontWeight.bold, fontSize: 19)),
+                                  const SizedBox(height: 2),
+                                  Text(DateFormat('dd.MM.yyyy HH:mm').format(z.termin), style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                                ],
+                              ),
+                            ),
+                            if (podzAll > 0)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFF23284D),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text('$podzDone/$podzAll', style: const TextStyle(color: Color(0xFF64B5F6), fontWeight: FontWeight.bold, fontSize: 13)),
+                                ),
+                              ),
+                            Switch(
+                              value: z.wykonane,
+                              activeThumbColor: Color(0xFF64B5F6),
+                              inactiveTrackColor: Colors.white24,
+                              onChanged: (v) {
+                                final provider = Provider.of<PlanerProvider>(context, listen: false);
+                                provider.zapiszZadanie(Zadanie(
+                                  id: z.id,
+                                  tytul: z.tytul,
+                                  opis: z.opis,
+                                  termin: z.termin,
+                                  kategoria: z.kategoria,
+                                  wykonane: v,
+                                  podzadania: z.podzadania,
+                                ), edycja: true);
+                              },
+                            ),
+                          ],
+                        ),
+                        trailing: null,
+                        children: [
+                          if (z.opis.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0),
+                              child: Text(z.opis, style: const TextStyle(color: Colors.white70)),
+                            ),
+                          Text('Kategoria: ${z.kategoria}', style: const TextStyle(color: Colors.white54)),
+                          const SizedBox(height: 8),
+                          if (z.podzadania.isNotEmpty)
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Podzadania:', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
+                                ...z.podzadania.map((p) => Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 2.0),
+                                  child: Row(
+                                    children: [
+                                      Icon(p.wykonane ? Icons.check_box : Icons.check_box_outline_blank, color: p.wykonane ? Color(0xFF64B5F6) : Colors.white38, size: 20),
+                                      const SizedBox(width: 8),
+                                      Expanded(child: Text(p.tytul, style: const TextStyle(color: Colors.white)) ),
+                                    ],
+                                  ),
+                                )),
+                              ],
+                            ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              if (podzAll > 0)
+                                Text('Wykonanych podzadań: $podzDone/$podzAll', style: const TextStyle(color: Color(0xFF64B5F6), fontWeight: FontWeight.bold)),
+                              TextButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => FormularzZadaniaEkran(zadanieDoEdycji: z),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.edit, color: Color(0xFF64B5F6)),
+                                label: const Text('Edytuj', style: TextStyle(color: Color(0xFF64B5F6))),                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -509,7 +258,294 @@ class ListaZadanEkran extends StatelessWidget {
         backgroundColor: const Color(0xFF64B5F6),
         icon: const Icon(Icons.add, color: Color(0xFF181A22)),
         label: const Text('Dodaj zadanie', style: TextStyle(color: Color(0xFF181A22), fontWeight: FontWeight.bold)),
-        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FormularzZadaniaEkran())),
+        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => FormularzZadaniaEkran())),
+      ),
+    );
+  }
+}
+
+// --- EKRAN FORMULARZA ZADANIA ---
+class FormularzZadaniaEkran extends StatefulWidget {
+  final Zadanie? zadanieDoEdycji;
+  const FormularzZadaniaEkran({Key? key, this.zadanieDoEdycji}) : super(key: key);
+
+  @override
+  State<FormularzZadaniaEkran> createState() => _FormularzZadaniaEkranState();
+}
+
+class _FormularzZadaniaEkranState extends State<FormularzZadaniaEkran> {
+  late TextEditingController tytulController;
+  late TextEditingController opisController;
+  late DateTime wybranyTermin;
+  late TimeOfDay wybranaGodzina;
+  late String wybranaKategoria;
+  late bool wykonane;
+  late List<Podzadanie> podzadania;
+  late TextEditingController podzadanieController;
+
+  final List<String> kategorie = ['Praca', 'Dom', 'Szkoła', 'Inne'];
+
+  @override
+  void initState() {
+    super.initState();
+    final z = widget.zadanieDoEdycji;
+    tytulController = TextEditingController(text: z?.tytul ?? '');
+    opisController = TextEditingController(text: z?.opis ?? '');
+    wybranyTermin = z?.termin ?? DateTime.now();
+    wybranaGodzina = TimeOfDay.fromDateTime(z?.termin ?? DateTime.now());
+    wybranaKategoria = z?.kategoria ?? kategorie.first;
+    wykonane = z?.wykonane ?? false;
+    podzadania = z?.podzadania.map((p) => Podzadanie(tytul: p.tytul, wykonane: p.wykonane)).toList() ?? [];
+    podzadanieController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    tytulController.dispose();
+    opisController.dispose();
+    podzadanieController.dispose();
+    super.dispose();
+  }
+
+  Future<void> wybierzTermin() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: wybranyTermin,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+      locale: const Locale('pl'),
+    );
+    if (picked != null) setState(() => wybranyTermin = picked);
+  }
+
+  Future<void> wybierzGodzine() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: wybranaGodzina,
+    );
+    if (picked != null) setState(() => wybranaGodzina = picked);
+  }
+
+  void zapisz() {
+    final provider = Provider.of<PlanerProvider>(context, listen: false);
+    final termin = DateTime(
+      wybranyTermin.year,
+      wybranyTermin.month,
+      wybranyTermin.day,
+      wybranaGodzina.hour,
+      wybranaGodzina.minute,
+    );
+    final noweZadanie = Zadanie(
+      id: widget.zadanieDoEdycji?.id ?? UniqueKey().toString(),
+      tytul: tytulController.text,
+      opis: opisController.text,
+      termin: termin,
+      kategoria: wybranaKategoria,
+      wykonane: wykonane,
+      podzadania: podzadania,
+    );
+    provider.zapiszZadanie(noweZadanie, edycja: widget.zadanieDoEdycji != null);
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF11131A),
+      appBar: AppBar(
+        title: Text(widget.zadanieDoEdycji == null ? 'Dodaj zadanie' : 'Edytuj zadanie'),
+        backgroundColor: const Color(0xFF181A22),
+        elevation: 4,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: tytulController,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+              decoration: const InputDecoration(
+                labelText: 'Tytuł zadania',
+                labelStyle: TextStyle(color: Color(0xFF64B5F6)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+              ),
+            ),
+            const SizedBox(height: 18),
+            TextField(
+              controller: opisController,
+              maxLines: 3,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                labelText: 'Opis (opcjonalnie)',
+                labelStyle: TextStyle(color: Color(0xFF64B5F6)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: wybierzTermin,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFF181A22), Color(0xFF23284D)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF23284D)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.calendar_month, color: Color(0xFF64B5F6)),
+                          const SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("Data", style: TextStyle(fontSize: 12, color: Colors.white70)),
+                              Text(
+                                DateFormat('dd.MM.yyyy').format(wybranyTermin),
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF64B5F6)),
+                              ),
+                            ],
+                          ),
+                          const Spacer(),
+                          const Icon(Icons.edit, size: 16, color: Colors.white70),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: InkWell(
+                    onTap: wybierzGodzine,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFF181A22), Color(0xFF23284D)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF23284D)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.access_time, color: Color(0xFF64B5F6)),
+                          const SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("Godzina", style: TextStyle(fontSize: 12, color: Colors.white70)),
+                              Text(
+                                wybranaGodzina.format(context),
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF64B5F6)),
+                              ),
+                            ],
+                          ),
+                          const Spacer(),
+                          const Icon(Icons.edit, size: 16, color: Colors.white70),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            DropdownButtonFormField<String>(
+              value: wybranaKategoria,
+              decoration: const InputDecoration(
+                labelText: 'Kategoria',
+                labelStyle: TextStyle(color: Color(0xFF64B5F6)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+              ),
+              items: kategorie.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+              onChanged: (val) => setState(() => wybranaKategoria = val!),
+            ),
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                const Text('Status:', style: TextStyle(color: Colors.white70)),
+                const SizedBox(width: 10),
+                Switch(
+                  value: wykonane,
+                  activeThumbColor: Colors.white,
+                  inactiveTrackColor: Colors.white24,
+                  onChanged: (v) => setState(() => wykonane = v),
+                ),
+                Text(wykonane ? 'WYKONANE' : 'NIEWYKONANE', style: TextStyle(color: wykonane ? Colors.white : const Color(0xFF64B5F6), fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 18),
+            const Text("Podzadania", style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
+            ...podzadania.asMap().entries.map((e) => ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: TextFormField(
+                initialValue: e.value.tytul,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(border: InputBorder.none),
+                onChanged: (val) => setState(() => podzadania[e.key].tytul = val),
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.close, color: Colors.red),
+                onPressed: () => setState(() => podzadania.removeAt(e.key)),
+              ),
+            )),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: podzadanieController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(hintText: "Dodaj podzadanie...", hintStyle: TextStyle(color: Colors.white70)),
+                    onSubmitted: (_) {
+                      if (podzadanieController.text.isNotEmpty && !podzadania.any((p) => p.tytul == podzadanieController.text)) {
+                        setState(() {
+                          podzadania.add(Podzadanie(tytul: podzadanieController.text));
+                          podzadanieController.clear();
+                        });
+                      }
+                    },
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.add_circle, color: Color(0xFF64B5F6), size: 30),
+                  onPressed: () {
+                    if (podzadanieController.text.isNotEmpty && !podzadania.any((p) => p.tytul == podzadanieController.text)) {
+                      setState(() {
+                        podzadania.add(Podzadanie(tytul: podzadanieController.text));
+                        podzadanieController.clear();
+                      });
+                    }
+                  },
+                )
+              ],
+            ),
+            const SizedBox(height: 30),
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton.icon(
+                onPressed: zapisz,
+                icon: const Icon(Icons.save, color: Colors.white),
+                label: const Text('ZAPISZ ZADANIE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF64B5F6),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
